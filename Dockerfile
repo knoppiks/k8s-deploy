@@ -9,7 +9,7 @@ ARG TARGETARCH
 # renovate: datasource=github-tags depName=helm lookupName=helm/helm
 ENV HELM_VERSION="v3.15.0"
 # renovate: datasource=github-tags depName=kustomize lookupName=kubernetes-sigs/kustomize extractVersion=^kustomize\/(?<version>v.+)$
-ENV KUSTOMIZE_VERSION="v5.4.1"
+ENV KUSTOMIZE_VERSION="v5.4.2"
 
 RUN curl -sLfo- "https://get.helm.sh/helm-${HELM_VERSION}-${TARGETOS}-${TARGETARCH}.tar.gz" | tar -xzO ${TARGETOS}-${TARGETARCH}/helm >/usr/local/bin/helm \
  && curl -sLfo- "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/${KUSTOMIZE_VERSION}/kustomize_${KUSTOMIZE_VERSION}_${TARGETOS}_${TARGETARCH}.tar.gz" | tar -xzO kustomize >/usr/local/bin/kustomize \
