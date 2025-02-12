@@ -7,7 +7,7 @@ ARG TARGETOS
 ARG TARGETARCH
 
 # renovate: datasource=github-tags depName=helm lookupName=helm/helm
-ENV HELM_VERSION="v3.17.0"
+ENV HELM_VERSION="v3.17.1"
 # renovate: datasource=github-tags depName=kustomize lookupName=kubernetes-sigs/kustomize extractVersion=^kustomize\/(?<version>v.+)$
 ENV KUSTOMIZE_VERSION="v5.6.0"
 
