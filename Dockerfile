@@ -1,4 +1,4 @@
-FROM docker.io/bitnami/kubectl:1.33.1-debian-12-r5@sha256:9081a6f83f4febf47369fc46b6f0f7683c7db243df5b43fc9defe51b0471a950
+FROM docker.io/bitnami/kubectl:1.33.1-debian-12-r6@sha256:e3fbbaeb8eac4852014732d5eecfe82119f6d282404bcb45f7942bb5c20258cd
 
 USER 0
 RUN install_packages -q curl git jq procps gettext
