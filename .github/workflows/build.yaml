@@ -102,3 +102,9 @@ jobs:
         subject-name: ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}
         subject-digest: ${{ steps.push.outputs.digest }}
         push-to-registry: true
+
+  final:
+    needs: [ build ]
+    runs-on: ubuntu-24.04
+    steps:
+    - run: echo "Done"
