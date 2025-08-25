@@ -6,7 +6,7 @@ ARG TARGETOS
 ARG TARGETARCH
 
 # renovate: datasource=github-tags depName=kubectl lookupName=kubernetes/kubernetes
-ENV KUBECTL_VERSION="v1.32.8"
+ENV KUBECTL_VERSION="v1.33.4"
 RUN curl -sLf https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/${TARGETOS}/${TARGETARCH}/kubectl -o /usr/local/bin/kubectl \
  && chmod +x /usr/local/bin/kubectl \
  && kubectl version --client
