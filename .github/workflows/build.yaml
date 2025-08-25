@@ -11,8 +11,10 @@ on:
 permissions: read-all
 
 env:
+  # The following renovate target exists only to trigger a rebuild when a new k8s is
+  # released. The versions job will determine actual kubectl versions.
   # renovate: datasource=github-tags depName=kubectl lookupName=kubernetes/kubernetes
-  KUBERNETES_VERSION: v1.33.4
+  LATEST_K8S_VERSION: v1.33.4
   LATEST_MINORS: 3
 
 jobs:
@@ -53,6 +55,12 @@ jobs:
     - name: Checkout
       uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
 
+    - name: Remove Version Prefix
+      id: version
+      env:
+        VERSION: ${{ matrix.k8s_version }}
+      run: echo "k8s=${VERSION#v}" >>"${GITHUB_OUTPUT}"
+
     - name: Docker meta
       id: meta
       uses: docker/metadata-action@c1e51972afc2121e065aed6d45c65596fe445f3f # v5
@@ -60,8 +68,8 @@ jobs:
         images: |
           ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}
         tags: |
-          type=ref,event=pr,prefix=${{ matrix.k8s_version }}-pr.
-          type=raw,value=${{ matrix.k8s_version }},enable={{is_default_branch}}
+          type=ref,event=pr,prefix=${{ steps.version.outputs.k8s }}-pr.
+          type=raw,value=${{ steps.version.outputs.k8s }},enable={{is_default_branch}}
 
     - name: Set up QEMU
       uses: docker/setup-qemu-action@29109295f81e9208d7d86ff1c6c12d2833863392 # v3
@@ -85,7 +93,7 @@ jobs:
         platforms: linux/amd64,linux/arm64
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
-        build-args: KUBECTL_VERSION=${{ matrix.k8s_version }}
+        build-args: KUBECTL_VERSION=${{ steps.version.outputs.k8s }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
