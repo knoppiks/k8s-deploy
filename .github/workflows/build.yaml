@@ -1,4 +1,4 @@
-name: ci
+name: CI
 
 on:
   push:
@@ -10,14 +10,40 @@ on:
 
 permissions: read-all
 
+env:
+  # renovate: datasource=github-tags depName=kubectl lookupName=kubernetes/kubernetes
+  KUBERNETES_VERSION: v1.33.4
+  LATEST_MINORS: 3
 
 jobs:
+  versions:
+    runs-on: ubuntu-24.04
+    steps:
+    - name: Harden Runner
+      uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0 # v2.12.0
+      with:
+        egress-policy: audit
+
+    - name: Fetch Kubernetes Versions for Build
+      id: versions
+      run: |
+        versions="$(curl -s https://api.github.com/repos/kubernetes/kubernetes/releases | jq -c '[.[] | select(.prerelease == false) | .tag_name] | group_by(split(".") | [.[0,1]]) | reverse | map(.[0])[:${{ env.LATEST_MINORS }}]')"
+        echo "versions=${versions}" >>"${GITHUB_OUTPUT}"
+
+    outputs:
+      versions: ${{ steps.versions.outputs.versions }}
+
   build:
+    needs: [ versions ]
     runs-on: ubuntu-24.04
     permissions:
       id-token: write
       packages: write
       attestations: write
+    strategy:
+      fail-fast: false
+      matrix:
+        k8s_version: ${{ fromJSON(needs.versions.outputs.versions) }}
     steps:
     - name: Harden Runner
       uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
@@ -34,10 +60,8 @@ jobs:
         images: |
           ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}
         tags: |
-          type=ref,event=pr
-          type=semver,pattern={{version}}
-          type=semver,pattern={{major}}.{{minor}}
-          type=raw,value=latest,enable={{is_default_branch}}
+          type=ref,event=pr,prefix=${{ matrix.k8s_version }}-pr.
+          type=raw,value=${{ matrix.k8s_version }},enable={{is_default_branch}}
 
     - name: Set up QEMU
       uses: docker/setup-qemu-action@29109295f81e9208d7d86ff1c6c12d2833863392 # v3
@@ -61,26 +85,12 @@ jobs:
         platforms: linux/amd64,linux/arm64
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
+        build-args: KUBECTL_VERSION=${{ matrix.k8s_version }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
 
     - uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2
       with:
         subject-name: ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}
         subject-digest: ${{ steps.push.outputs.digest }}
         push-to-registry: true
-
-    outputs:
-      digest: ${{ steps.push.outputs.digest }}
-
-  attest-slsa:
-    needs: [ build ]
-    permissions:
-      actions: read # for detecting the Github Actions environment.
-      id-token: write
-      packages: write # for uploading attestations.
-    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_container_slsa3.yml@f7dd8c54c2067bafc12ca7a55595d5ee9b75204a # v2.1.0
-    with:
-      image: ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}
-      digest: ${{ needs.build.outputs.digest }}
-      registry-username: ${{ github.repository_owner }}
-    secrets:
-      registry-password: ${{ secrets.GITHUB_TOKEN }}
