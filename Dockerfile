@@ -6,7 +6,7 @@ ARG TARGETOS
 ARG TARGETARCH
 
 # renovate: datasource=github-tags depName=helm lookupName=helm/helm
-ENV HELM_VERSION="v4.0.3"
+ENV HELM_VERSION="v4.0.4"
 RUN curl -sLfo- "https://get.helm.sh/helm-${HELM_VERSION}-${TARGETOS}-${TARGETARCH}.tar.gz" | tar -xzO ${TARGETOS}-${TARGETARCH}/helm >/usr/local/bin/helm \
  && chmod +x /usr/local/bin/helm \
  && helm version
