@@ -12,7 +12,7 @@ RUN curl -sLfo- "https://get.helm.sh/helm-${HELM_VERSION}-${TARGETOS}-${TARGETAR
  && helm version
 
 # renovate: datasource=github-tags depName=kustomize lookupName=kubernetes-sigs/kustomize extractVersion=^kustomize\/(?<version>v.+)$
-ENV KUSTOMIZE_VERSION="v5.8.0"
+ENV KUSTOMIZE_VERSION="v5.8.1"
 RUN curl -sLfo- "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/${KUSTOMIZE_VERSION}/kustomize_${KUSTOMIZE_VERSION}_${TARGETOS}_${TARGETARCH}.tar.gz" | tar -xzO kustomize >/usr/local/bin/kustomize \
  && chmod +x /usr/local/bin/kustomize \
  && kustomize version
