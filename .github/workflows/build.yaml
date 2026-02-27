@@ -14,7 +14,7 @@ env:
   # The following renovate target exists only to trigger a rebuild when a new k8s is
   # released. The versions job will determine actual kubectl versions.
   # renovate: datasource=github-tags depName=kubectl lookupName=kubernetes/kubernetes
-  LATEST_K8S_VERSION: v1.35.1
+  LATEST_K8S_VERSION: v1.35.2
   LATEST_MINORS: 3
 
 jobs:
