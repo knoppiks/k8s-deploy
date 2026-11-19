@@ -4,7 +4,7 @@ on:
   schedule:
   - cron: '30 1 * * *'
   push:
-    branches: [ '181-remove-old-images' ]
+    branches: [ '345-keep-superseded-release-images-pullable' ]
   workflow_dispatch:
 
 # Declare default permissions as read-only.
@@ -13,6 +13,8 @@ permissions: read-all
 jobs:
   cleanup:
     runs-on: ubuntu-24.04
+    concurrency:
+      group: ghcr-cleanup
     permissions:
       packages: write
     steps:
@@ -21,19 +23,22 @@ jobs:
       with:
         egress-policy: audit
 
-    - name: Cleanup Untagged Images
+    # Consumers pin release tags by digest. Keep superseded digests pullable
+    # for a while after the tag moves. Age counts from the build, not from
+    # the tag move; the weekly rebuild keeps tags younger than 7 days.
+    - name: Cleanup Untagged Images >30d
       uses: dataaxiom/ghcr-cleanup-action@d52806a0dc70b430571a37da1fde39733ffd640f # v1.2.2
       with:
         delete-untagged: true
         delete-ghost-images: true
         delete-partial-images: true
         delete-orphaned-images: true
+        older-than: 30 days
 
-    - name: Cleanup >7d Old Images
+    - name: Cleanup PR Images >7d
       uses: dataaxiom/ghcr-cleanup-action@d52806a0dc70b430571a37da1fde39733ffd640f # v1.2.2
       with:
         use-regex: true
-        exclude-tags: '^\d+.\d+.\d+$'
-        delete-tags: '.*'
+        exclude-tags: '^\d+\.\d+\.\d+$'
+        delete-tags: '^(v?\d+\.\d+\.\d+-(pr\.)?\d+|pr-\d+)$'
         older-than: 7 days
-        dry-run: true
