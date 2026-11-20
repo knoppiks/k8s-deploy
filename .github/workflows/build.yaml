@@ -3,6 +3,14 @@ name: CI
 on:
   push:
     branches: [ "main" ]
+    # Rebuilding moves the release tags to a new digest, so only rebuild when
+    # the image inputs change. Weekly schedule picks up OS package updates.
+    paths:
+    - Dockerfile
+    - entrypoint.sh
+  schedule:
+  - cron: '0 4 * * 1'
+  workflow_dispatch:
   pull_request:
     branches: [ "main" ]
   merge_group:
@@ -11,10 +19,6 @@ on:
 permissions: read-all
 
 env:
-  # The following renovate target exists only to trigger a rebuild when a new k8s is
-  # released. The versions job will determine actual kubectl versions.
-  # renovate: datasource=github-tags depName=kubectl lookupName=kubernetes/kubernetes
-  LATEST_K8S_VERSION: v1.37.2
   LATEST_MINORS: 3
 
 jobs:

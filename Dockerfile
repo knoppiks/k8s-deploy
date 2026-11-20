@@ -17,7 +17,9 @@ RUN curl -sLfo- "https://github.com/kubernetes-sigs/kustomize/releases/download/
  && chmod +x /usr/local/bin/kustomize \
  && kustomize version
 
-ARG KUBECTL_VERSION
+# Default for local builds. CI overrides it per minor; a bump here triggers the release rebuild.
+# renovate: datasource=github-tags depName=kubectl lookupName=kubernetes/kubernetes
+ARG KUBECTL_VERSION="v1.37.2"
 RUN curl -sLf https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/${TARGETOS}/${TARGETARCH}/kubectl -o /usr/local/bin/kubectl \
  && chmod +x /usr/local/bin/kubectl \
  && kubectl version --client
