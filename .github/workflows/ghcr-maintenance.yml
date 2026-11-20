@@ -3,8 +3,6 @@ name: GHCR Maintenance
 on:
   schedule:
   - cron: '30 1 * * *'
-  push:
-    branches: [ '345-keep-superseded-release-images-pullable' ]
   workflow_dispatch:
 
 # Declare default permissions as read-only.
