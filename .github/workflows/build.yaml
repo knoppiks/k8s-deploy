@@ -32,8 +32,12 @@ jobs:
 
     - name: Fetch Kubernetes Versions for Build
       id: versions
+      env:
+        GH_TOKEN: ${{ github.token }}
       run: |
-        versions="$(curl -s https://api.github.com/repos/kubernetes/kubernetes/releases | jq -c '[.[] | select(.prerelease == false) | .tag_name] | group_by(split(".") | [.[0,1]]) | reverse | map(.[0])[:${{ env.LATEST_MINORS }}]')"
+        releases="$(gh api repos/kubernetes/kubernetes/releases)"
+        versions="$(jq -c --argjson n "${LATEST_MINORS}" '[.[] | select(.prerelease == false) | .tag_name] | group_by(split(".") | [.[0,1]]) | reverse | map(.[0])[:$n]' <<<"${releases}")"
+        jq -e --argjson n "${LATEST_MINORS}" 'length == $n' <<<"${versions}" >/dev/null || { echo "::error::Expected ${LATEST_MINORS} versions, got: ${versions}"; exit 1; }
         echo "versions=${versions}" >>"${GITHUB_OUTPUT}"
 
     outputs:
@@ -107,8 +111,15 @@ jobs:
         subject-digest: ${{ steps.push.outputs.digest }}
         push-to-registry: true
 
+  # Required status check. Must run and fail when any job did not succeed,
+  # because GitHub treats a skipped required check as passing.
   final:
-    needs: [ build ]
+    needs: [ versions, build ]
+    if: always()
     runs-on: ubuntu-24.04
     steps:
+    - name: Fail on Unsuccessful Jobs
+      if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') || contains(needs.*.result, 'skipped')
+      run: exit 1
+
     - run: echo "Done"
