@@ -25,7 +25,7 @@ jobs:
     # for a while after the tag moves. Age counts from the build, not from
     # the tag move; the weekly rebuild keeps tags younger than 7 days.
     - name: Cleanup Untagged Images >30d
-      uses: dataaxiom/ghcr-cleanup-action@d52806a0dc70b430571a37da1fde39733ffd640f # v1.2.2
+      uses: dataaxiom/ghcr-cleanup-action@ac45a8c04b1eb4b27974ca79a0a74f344c93664b # v1.3.0
       with:
         delete-untagged: true
         delete-ghost-images: true
@@ -34,7 +34,7 @@ jobs:
         older-than: 30 days
 
     - name: Cleanup PR Images >7d
-      uses: dataaxiom/ghcr-cleanup-action@d52806a0dc70b430571a37da1fde39733ffd640f # v1.2.2
+      uses: dataaxiom/ghcr-cleanup-action@ac45a8c04b1eb4b27974ca79a0a74f344c93664b # v1.3.0
       with:
         use-regex: true
         exclude-tags: '^\d+\.\d+\.\d+$'
